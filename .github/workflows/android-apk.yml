@@ -1,0 +1,45 @@
+
+name: Build CGD Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Recuperer le depot
+        uses: actions/checkout@v4
+
+      - name: Installer Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Decompresser le projet CGD
+        run: |
+          unzip -o CGD_ANDROID_V108_COMPILATION_EN_LIGNE.zip
+          ls CGD_ANDROID_V108
+
+      - name: Installer Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Compiler CGD
+        working-directory: CGD_ANDROID_V108
+        run: gradle --no-daemon :app:assembleDebug
+
+      - name: Recuperer APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: CGD-V108-APK
+          path: CGD_ANDROID_V108/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          
